@@ -1,8 +1,9 @@
-import os,sys
-
-sys.path.append(os.environ.get('PS_SITEPACKAGES'))
+import os,sys,json
 
 from Qt import QtWidgets, QtCore, QtGui
+
+import qtmodern.styles
+import qtmodern.windows
 
 ################################################################################
 # Item Widgets
@@ -45,12 +46,12 @@ class ExpenseItemWidget(QtWidgets.QWidget):
 		super(ExpenseItemWidget,self).__init__()
 
 		self.Name = kwargs.get('Name','Temp Expense')
-		self.Price = kwargs.get()
+		self.Price = kwargs.get('Price')
 
-		self.lblName = QtWidgets.QLabel(self.Name)
-		self.lblPrice = QtWidgets.QLabel('Price')
+		self.lblName = QtWidgets.QLabel(self.Name + ':')
+		self.lblPrice = QtWidgets.QLabel('Price:')
 		self.uiPrice = QtWidgets.QDoubleSpinBox()
-		self.lblEstPrice = QtWidgets.QLabel('Est. Price')
+		self.lblEstPrice = QtWidgets.QLabel('Est. Price:')
 		self.uiEstPice = QtWidgets.QDoubleSpinBox()
 		self.uiNotes = QtWidgets.QTextEdit()
 
@@ -73,19 +74,88 @@ class ExpenseItemWidget(QtWidgets.QWidget):
 ################################################################################
 # Sub Widgets
 ################################################################################
+class WeddingInfo(QtWidgets.QWidget):
+	def __init__(self):
+		super().__init__()
+
+		self.layMain = QtWidgets.QFormLayout()
+
+		self.layMain.addRow('Confirmed Guest Count:',QtWidgets.QLabel('Temp'))
+		self.layMain.addRow('Estimated Guest Count:',QtWidgets.QLabel('Temp'))
+		self.layMain.addRow('Confirmed Price:',QtWidgets.QLabel('Temp'))
+		self.layMain.addRow('Estimated Price:',QtWidgets.QLabel('Temp'))
+
+		self.setLayout(self.layMain)
+
+
+class GuestList(QtWidgets.QWidget):
+	def __init__(self, parent = None):
+		super().__init__()
+
+		self.uiTree = QtWidgets.QTreeWidget()
+
+		self.layMain = QtWidgets.QVBoxLayout()
+
+		self.layMain.addWidget(self.uiTree)
+
+		self.setLayout(self.layMain)
+
+
+class ExpenseList(QtWidgets.QWidget):
+	def __init__(self, parent = None):
+		super().__init__()
+
+		self.uiTree = QtWidgets.QTreeWidget()
+
+		self.layMain = QtWidgets.QVBoxLayout()
+
+		self.layMain.addWidget(self.uiTree)
+		self.layMain.addWidget(QtWidgets.QPushButton(QtGui.QIcon(QtGui.QPixmap(r"/home/chris/Repos/material-design-icons/src/social/outdoor_grill/materialiconstwotone/24px.svg")),'Copy'))
+
+		self.setLayout(self.layMain)		
+
 
 
 ################################################################################
 # Main Tool
 ################################################################################
+class WeddingPlanner(QtWidgets.QMainWindow):
+	def __init__(self, **kwargs):
+		super().__init__()
+		self.resize(800,600)
+		self.setWindowTitle('Wedding Planner')
+
+		self.uiSplitter = QtWidgets.QSplitter()
+		self.uiTabs = QtWidgets.QTabWidget()
+
+		self.uiWeddingInfo = WeddingInfo()
+		self.uiGuestList = GuestList()
+		self.uiExpenseList = ExpenseList()
+
+		self.menuFile = QtWidgets.QMenu('File')
+
+		self.actOpen = QtWidgets.QAction()
+
+		self.uiTabs.addTab(self.uiGuestList, 'Guests')
+		self.uiTabs.addTab(self.uiExpenseList, 'Expenses')
+
+		self.uiSplitter.addWidget(self.uiWeddingInfo)
+		self.uiSplitter.addWidget(self.uiTabs)
+
+		self.setCentralWidget(self.uiSplitter)
 
 
+def setStyleSheet(tool):
+	styleFile = os.path.join(os.path.dirname(__file__),'resources/stylesheets/QTDark.stylesheet')
 
+	with open(styleFile,'r') as sf:
+		tool.setStyleSheet(sf.read())
 
 if __name__ == '__main__':
-	print 'running'
+	print('running')
 	app = QtWidgets.QApplication(sys.argv)
 	# StyleUtils.setStyleSheet(app)
-	tool = ExpenseItemWidget()
+	tool = WeddingPlanner()
+	setStyleSheet(tool)
 	tool.show()
 	sys.exit(app.exec_())	
